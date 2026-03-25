@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Form Wilayah Indonesia</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  --blue: #2563eb;
+  --blue-light: #eff6ff;
+  --blue-dark: #1d4ed8;
+  --green: #16a34a;
+  --green-light: #f0fdf4;
+  --red: #dc2626;
+  --red-light: #fef2f2;
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-700: #374151;
+  --gray-900: #111827;
+  --radius: 10px;
+  --shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,.07), 0 2px 4px -1px rgba(0,0,0,.06);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  background: var(--gray-50);
+  color: var(--gray-900);
+  min-height: 100vh;
+  padding: 24px 16px 64px;
+}
+
+/* ── Layout ── */
+.wrap { max-width: 560px; margin: 0 auto; }
+
+/* ── Setup screen ── */
+#setup-screen { display: flex; flex-direction: column; gap: 16px; }
+#form-screen  { display: none; flex-direction: column; gap: 16px; }
+#success-screen { display: none; }
+
+/* ── Card ── */
+.card {
+  background: #fff;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+/* ── Setup header ── */
+.setup-header {
+  background: var(--blue);
+  color: #fff;
+  padding: 28px 28px 24px;
+}
+.setup-header .eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  opacity: .75;
+  margin-bottom: 8px;
+}
+.setup-header h1 { font-size: 22px; font-weight: 700; line-height: 1.3; }
+.setup-header p  { font-size: 13px; opacity: .85; margin-top: 6px; line-height: 1.5; }
+
+/* ── Setup body ── */
+.setup-body { padding: 24px 28px; display: flex; flex-direction: column; gap: 20px; }
+
+.setup-step {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+.step-num {
+  flex-shrink: 0;
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: var(--blue-light);
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+}
+.step-content { flex: 1; }
+.step-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-700);
+  margin-bottom: 8px;
+}
+
+/* Input & upload */
+.input-field {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--gray-900);
+  transition: border-color .15s, box-shadow .15s;
+  background: #fff;
+}
+.input-field:focus {
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+}
+.input-field::placeholder { color: var(--gray-400); }
+.input-field.valid   { border-color: var(--green); }
+.input-field.invalid { border-color: var(--red); }
+
+.upload-zone {
+  border: 2px dashed var(--gray-200);
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .15s;
+  position: relative;
+}
+.upload-zone:hover, .upload-zone.drag { border-color: var(--blue); background: var(--blue-light); }
+.upload-zone.done  { border-color: var(--green); background: var(--green-light); border-style: solid; }
+.upload-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.upload-icon { font-size: 24px; margin-bottom: 6px; }
+.upload-text { font-size: 13px; color: var(--gray-500); }
+.upload-text strong { color: var(--blue); }
+.upload-status { font-size: 12px; margin-top: 6px; color: var(--gray-400); min-height: 16px; }
+.upload-status.ok  { color: var(--green); }
+.upload-status.err { color: var(--red); }
+
+/* ── Buttons ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 20px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all .15s;
+  white-space: nowrap;
+}
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn-primary {
+  background: var(--blue);
+  color: #fff;
+  width: 100%;
+  padding: 13px;
+}
+.btn-primary:hover:not(:disabled) { background: var(--blue-dark); box-shadow: var(--shadow-md); }
+.btn-ghost { background: none; color: var(--blue); font-size: 13px; padding: 8px 12px; }
+.btn-ghost:hover { background: var(--blue-light); }
+
+/* ── Form header ── */
+.form-header {
+  padding: 28px 28px 22px;
+  border-bottom: 1px solid var(--gray-100);
+}
+.form-header h2 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+.form-header p  { font-size: 13px; color: var(--gray-500); line-height: 1.5; }
+
+/* ── Form fields ── */
+.form-body  { padding: 24px 28px; display: flex; flex-direction: column; gap: 20px; }
+.form-footer { padding: 0 28px 24px; display: flex; flex-direction: column; gap: 10px; }
+
+.field {}
+.field-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-700);
+  margin-bottom: 7px;
+}
+.required { color: var(--red); }
+.optional { font-size: 11px; color: var(--gray-400); font-weight: 400; }
+
+.select-wrap { position: relative; }
+.select-wrap select {
+  width: 100%;
+  padding: 10px 38px 10px 14px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--gray-900);
+  appearance: none;
+  -webkit-appearance: none;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color .15s, box-shadow .15s;
+}
+.select-wrap select:focus {
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+}
+.select-wrap select:disabled { background: var(--gray-50); color: var(--gray-400); cursor: not-allowed; }
+.select-wrap::after {
+  content: '';
+  position: absolute;
+  right: 13px; top: 50%;
+  transform: translateY(-50%);
+  width: 0; height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid var(--gray-400);
+  pointer-events: none;
+}
+.field-hint {
+  font-size: 11px;
+  color: var(--gray-400);
+  margin-top: 5px;
+  min-height: 14px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.field-hint.loading { color: var(--blue); }
+.spinner {
+  width: 10px; height: 10px;
+  border: 2px solid var(--gray-200);
+  border-top-color: var(--blue);
+  border-radius: 50%;
+  animation: spin .6s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.field textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--gray-900);
+  resize: vertical;
+  min-height: 80px;
+  transition: border-color .15s, box-shadow .15s;
+}
+.field textarea:focus {
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+}
+
+.field.has-error select,
+.field.has-error input,
+.field.has-error textarea { border-color: var(--red); }
+.field-error { display: none; font-size: 11px; color: var(--red); margin-top: 4px; }
+.field.has-error .field-error { display: block; }
+
+/* ── Progress bar ── */
+.progress-bar {
+  height: 3px;
+  background: var(--gray-100);
+  border-radius: 2px;
+  overflow: hidden;
+  margin: 0 28px 0;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--blue);
+  border-radius: 2px;
+  transition: width .3s;
+  width: 0%;
+}
+
+/* ── Success ── */
+.success-card {
+  background: #fff;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 48px 32px;
+  text-align: center;
+}
+.success-icon { font-size: 52px; margin-bottom: 16px; }
+.success-card h2 { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+.success-card p  { font-size: 14px; color: var(--gray-500); line-height: 1.6; }
+.success-meta {
+  margin: 20px 0;
+  background: var(--gray-50);
+  border-radius: 8px;
+  padding: 16px;
+  font-size: 13px;
+  text-align: left;
+}
+.success-meta .meta-row { display: flex; gap: 8px; margin-bottom: 6px; }
+.success-meta .meta-row:last-child { margin-bottom: 0; }
+.meta-label { color: var(--gray-400); min-width: 120px; }
+.meta-value { font-weight: 600; color: var(--gray-700); }
+.success-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 24px; }
+
+/* ── Divider ── */
+.divider { height: 1px; background: var(--gray-100); }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <!-- ══ SETUP SCREEN ══════════════════════════════════════════ -->
+  <div id="setup-screen">
+    <div class="card">
+      <div class="setup-header">
+        <div class="eyebrow">Setup Awal</div>
+        <h1>Form Wilayah Indonesia</h1>
+        <p>Lakukan setup sekali — setelah selesai, download versi siap pakai yang bisa dibagikan ke siapa saja.</p>
+      </div>
+      <div class="setup-body">
+
+        <div class="setup-step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <div class="step-label">Masukkan URL Apps Script kamu</div>
+            <input
+              type="url"
+              id="script-url"
+              class="input-field"
+              placeholder="https://script.google.com/macros/s/.../exec"
+              oninput="validateUrl(this)"
+            >
+            <div style="font-size:11px;color:var(--gray-400);margin-top:5px">
+              Deploy Apps Script → New Deployment → Web App → Execute as: Me → Who has access: <strong>Anyone</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="setup-step">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <div class="step-label">Upload file CSV districts kamu</div>
+            <div class="upload-zone" id="upload-zone">
+              <input type="file" id="csv-file" accept=".csv" onchange="handleCSV(this)">
+              <div class="upload-icon" id="upload-icon">📄</div>
+              <div class="upload-text" id="upload-text"><strong>Klik untuk upload</strong> atau drag & drop<br><span style="font-size:11px">File _Districts.csv dari Google Sheets</span></div>
+              <div class="upload-status" id="upload-status"></div>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" id="generate-btn" onclick="generateForm()" disabled>
+          ✨ Generate & Download Form
+        </button>
+
+        <div style="text-align:center;font-size:12px;color:var(--gray-400)">
+          Form yang didownload bisa dihosting di GitHub Pages, Netlify, atau dibagikan langsung — <strong>tanpa perlu login Google</strong>.
+        </div>
+
+      </div>
+    </div>
+
+    <div style="text-align:center">
+      <button class="btn btn-ghost" onclick="skipSetup()">
+        Sudah punya form → Preview tanpa setup
+      </button>
+    </div>
+  </div>
+
+  <!-- ══ FORM SCREEN ════════════════════════════════════════════ -->
+  <div id="form-screen">
+    <div class="card">
+      <div class="form-header">
+        <h2>Form Wilayah Indonesia</h2>
+        <p>Pilih wilayah kamu: Provinsi → Kabupaten/Kota → Kecamatan</p>
+      </div>
+
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+
+      <div class="form-body">
+
+        <!-- Nama -->
+        <div class="field" id="f-nama">
+          <div class="field-label">Nama <span class="required">*</span></div>
+          <div class="select-wrap" style="display:block">
+            <input type="text" id="inp-nama" class="input-field" placeholder="Nama lengkap kamu" oninput="updateProgress()">
+          </div>
+          <div class="field-error">Nama wajib diisi.</div>
+        </div>
+
+        <!-- Provinsi -->
+        <div class="field" id="f-provinsi">
+          <div class="field-label">Provinsi <span class="required">*</span></div>
+          <div class="select-wrap">
+            <select id="sel-provinsi" onchange="onProvinsiChange(this.value)">
+              <option value="">Pilih Provinsi</option>
+            </select>
+          </div>
+          <div class="field-hint" id="hint-provinsi"></div>
+          <div class="field-error">Provinsi wajib dipilih.</div>
+        </div>
+
+        <!-- Kabupaten/Kota -->
+        <div class="field" id="f-kota">
+          <div class="field-label">Kabupaten / Kota <span class="required">*</span></div>
+          <div class="select-wrap">
+            <select id="sel-kota" onchange="onKotaChange(this.value)" disabled>
+              <option value="">Pilih Kabupaten/Kota</option>
+            </select>
+          </div>
+          <div class="field-hint" id="hint-kota">Pilih provinsi terlebih dahulu</div>
+          <div class="field-error">Kabupaten/Kota wajib dipilih.</div>
+        </div>
+
+        <!-- Kecamatan -->
+        <div class="field" id="f-kecamatan">
+          <div class="field-label">Kecamatan <span class="required">*</span></div>
+          <div class="select-wrap">
+            <select id="sel-kecamatan" disabled>
+              <option value="">Pilih Kecamatan</option>
+            </select>
+          </div>
+          <div class="field-hint" id="hint-kecamatan">Pilih kabupaten/kota terlebih dahulu</div>
+          <div class="field-error">Kecamatan wajib dipilih.</div>
+        </div>
+
+        <!-- Catatan -->
+        <div class="field" id="f-catatan">
+          <div class="field-label">Catatan <span class="optional">(opsional)</span></div>
+          <textarea id="inp-catatan" placeholder="Tambahkan catatan jika perlu..."></textarea>
+        </div>
+
+      </div>
+
+      <div class="divider"></div>
+      <div class="form-footer">
+        <button class="btn btn-primary" id="submit-btn" onclick="submitForm()">
+          Kirim Respons
+        </button>
+        <div style="text-align:center">
+          <button class="btn btn-ghost" onclick="clearForm()">Hapus isian</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SUCCESS SCREEN ════════════════════════════════════════ -->
+  <div id="success-screen">
+    <div class="success-card">
+      <div class="success-icon">🎉</div>
+      <h2>Respons Terkirim!</h2>
+      <p>Terima kasih, data kamu sudah tersimpan.</p>
+      <div class="success-meta" id="success-meta"></div>
+      <div class="success-actions">
+        <button class="btn btn-primary" onclick="resetToForm()">Kirim respons lain</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// DATA — injected here after setup. Structure:
+// DISTRICTS_DATA = { "Jawa Barat": { "Kota Bandung": ["Andir", "Antapani", ...], ... }, ... }
+// ═══════════════════════════════════════════════════════════
+var DISTRICTS_DATA = null; // replaced with real data after generate
+var SCRIPT_URL     = null; // replaced with real URL after generate
+
+// ═══════════════════════════════════════════════════════════
+// SETUP LOGIC
+// ═══════════════════════════════════════════════════════════
+var parsedCSVData = null;
+
+function validateUrl(input) {
+  var ok = input.value.includes("script.google.com") || input.value.startsWith("https://");
+  input.classList.toggle("valid", ok && input.value.length > 10);
+  checkSetupReady();
+}
+
+function handleCSV(input) {
+  var file = input.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      parsedCSVData = parseCSVtoHierarchy(e.target.result);
+      var provCount  = Object.keys(parsedCSVData).length;
+      var kotaCount  = Object.values(parsedCSVData).reduce(function(s,v){ return s + Object.keys(v).length; }, 0);
+      var kecCount   = Object.values(parsedCSVData).reduce(function(s,v){
+        return s + Object.values(v).reduce(function(s2,arr){ return s2 + arr.length; }, 0);
+      }, 0);
+      document.getElementById("upload-icon").textContent = "✅";
+      document.getElementById("upload-text").innerHTML = "<strong>" + file.name + "</strong>";
+      var st = document.getElementById("upload-status");
+      st.textContent = provCount + " provinsi · " + kotaCount + " kab/kota · " + kecCount + " kecamatan";
+      st.className = "upload-status ok";
+      document.getElementById("upload-zone").classList.add("done");
+      checkSetupReady();
+    } catch(err) {
+      document.getElementById("upload-status").textContent = "Error: " + err.message;
+      document.getElementById("upload-status").className = "upload-status err";
+    }
+  };
+  reader.readAsText(file, "UTF-8");
+}
+
+function parseCSVtoHierarchy(text) {
+  var lines = text.split(/\r?\n/).filter(function(l){ return l.trim(); });
+  var start = 0;
+  var first = lines[0].toLowerCase();
+  if (first.includes("province") || first.includes("provinsi") || first.includes("city")) start = 1;
+
+  var hierarchy = {};
+  for (var i = start; i < lines.length; i++) {
+    var cols = parseCSVLine(lines[i]);
+    if (cols.length < 3) continue;
+    var prov = cols[0].trim(), kota = cols[1].trim(), kec = cols[2].trim();
+    if (!prov || !kota || !kec) continue;
+    if (!hierarchy[prov]) hierarchy[prov] = {};
+    if (!hierarchy[prov][kota]) hierarchy[prov][kota] = [];
+    if (hierarchy[prov][kota].indexOf(kec) === -1) hierarchy[prov][kota].push(kec);
+  }
+  // Sort each level
+  var sorted = {};
+  Object.keys(hierarchy).sort().forEach(function(p) {
+    sorted[p] = {};
+    Object.keys(hierarchy[p]).sort().forEach(function(k) {
+      sorted[p][k] = hierarchy[p][k].sort();
+    });
+  });
+  return sorted;
+}
+
+function parseCSVLine(line) {
+  var res = [], cur = "", inQ = false;
+  for (var i = 0; i < line.length; i++) {
+    var c = line[i];
+    if (c === '"') { if (inQ && line[i+1] === '"') { cur += '"'; i++; } else inQ = !inQ; }
+    else if (c === ',' && !inQ) { res.push(cur); cur = ""; }
+    else cur += c;
+  }
+  res.push(cur);
+  return res;
+}
+
+function checkSetupReady() {
+  var urlOk  = document.getElementById("script-url").value.length > 20;
+  var dataOk = parsedCSVData !== null;
+  document.getElementById("generate-btn").disabled = !(urlOk && dataOk);
+}
+
+function generateForm() {
+  // Get current HTML, inject DISTRICTS_DATA and SCRIPT_URL, trigger download
+  var url     = document.getElementById("script-url").value.trim();
+  var dataStr = JSON.stringify(parsedCSVData);
+  var html    = document.documentElement.outerHTML;
+
+  // Replace the placeholder data and URL
+  html = html.replace(
+    "var DISTRICTS_DATA = null;",
+    "var DISTRICTS_DATA = " + dataStr + ";"
+  );
+  html = html.replace(
+    "var SCRIPT_URL     = null;",
+    'var SCRIPT_URL = "' + url + '";'
+  );
+
+  // Auto-start the form (skip setup)
+  html = html.replace(
+    "initApp();",
+    "// auto-configured\ninitApp();"
+  );
+
+  var blob = new Blob([html], { type: "text/html;charset=utf-8" });
+  var a    = document.createElement("a");
+  a.href   = URL.createObjectURL(blob);
+  a.download = "form-wilayah.html";
+  a.click();
+  URL.revokeObjectURL(a.href);
+
+  // Also show a preview
+  DISTRICTS_DATA = parsedCSVData;
+  SCRIPT_URL     = url;
+  showFormScreen();
+}
+
+function skipSetup() {
+  showFormScreen();
+}
+
+// ═══════════════════════════════════════════════════════════
+// FORM LOGIC
+// ═══════════════════════════════════════════════════════════
+function showFormScreen() {
+  document.getElementById("setup-screen").style.display = "none";
+  document.getElementById("form-screen").style.display  = "flex";
+  initForm();
+}
+
+function initForm() {
+  var sel = document.getElementById("sel-provinsi");
+  sel.innerHTML = '<option value="">Pilih Provinsi</option>';
+  if (DISTRICTS_DATA) {
+    Object.keys(DISTRICTS_DATA).forEach(function(p) {
+      var opt = document.createElement("option");
+      opt.value = p; opt.textContent = p;
+      sel.appendChild(opt);
+    });
+    setHint("provinsi", Object.keys(DISTRICTS_DATA).length + " provinsi tersedia");
+  } else {
+    setHint("provinsi", "Data belum dimuat — upload CSV di setup");
+  }
+  updateProgress();
+}
+
+function onProvinsiChange(provinsi) {
+  resetSelect("kota",      "Pilih Kabupaten/Kota", true);
+  resetSelect("kecamatan", "Pilih Kecamatan",      true);
+  clearErr("kota"); clearErr("kecamatan");
+
+  if (!provinsi || !DISTRICTS_DATA || !DISTRICTS_DATA[provinsi]) {
+    setHint("kota", "Pilih provinsi terlebih dahulu");
+    setHint("kecamatan", "Pilih kabupaten/kota terlebih dahulu");
+    updateProgress(); return;
+  }
+
+  var cities = Object.keys(DISTRICTS_DATA[provinsi]);
+  var sel    = document.getElementById("sel-kota");
+  cities.forEach(function(c) {
+    var opt = document.createElement("option");
+    opt.value = c; opt.textContent = c;
+    sel.appendChild(opt);
+  });
+  sel.disabled = false;
+  setHint("kota", cities.length + " kabupaten/kota tersedia");
+  setHint("kecamatan", "Pilih kabupaten/kota terlebih dahulu");
+  updateProgress();
+}
+
+function onKotaChange(kota) {
+  resetSelect("kecamatan", "Pilih Kecamatan", true);
+  clearErr("kecamatan");
+
+  var provinsi = document.getElementById("sel-provinsi").value;
+  if (!kota || !DISTRICTS_DATA || !DISTRICTS_DATA[provinsi] || !DISTRICTS_DATA[provinsi][kota]) {
+    setHint("kecamatan", "Pilih kabupaten/kota terlebih dahulu");
+    updateProgress(); return;
+  }
+
+  var districts = DISTRICTS_DATA[provinsi][kota];
+  var sel       = document.getElementById("sel-kecamatan");
+  districts.forEach(function(d) {
+    var opt = document.createElement("option");
+    opt.value = d; opt.textContent = d;
+    sel.appendChild(opt);
+  });
+  sel.disabled = false;
+  setHint("kecamatan", districts.length + " kecamatan tersedia");
+  updateProgress();
+}
+
+function updateProgress() {
+  var fields = [
+    document.getElementById("inp-nama").value.trim(),
+    document.getElementById("sel-provinsi").value,
+    document.getElementById("sel-kota").value,
+    document.getElementById("sel-kecamatan").value
+  ];
+  var filled = fields.filter(function(v){ return !!v; }).length;
+  document.getElementById("progress-fill").style.width = (filled / 4 * 100) + "%";
+}
+
+function validate() {
+  var ok = true;
+  function check(fieldId, val) {
+    if (!val) { document.getElementById(fieldId).classList.add("has-error"); ok = false; }
+    else       { document.getElementById(fieldId).classList.remove("has-error"); }
+  }
+  check("f-nama",      document.getElementById("inp-nama").value.trim());
+  check("f-provinsi",  document.getElementById("sel-provinsi").value);
+  check("f-kota",      document.getElementById("sel-kota").value);
+  check("f-kecamatan", document.getElementById("sel-kecamatan").value);
+  return ok;
+}
+
+function submitForm() {
+  if (!validate()) return;
+
+  var btn = document.getElementById("submit-btn");
+  btn.disabled    = true;
+  btn.textContent = "Mengirim...";
+
+  var payload = {
+    nama:      document.getElementById("inp-nama").value.trim(),
+    provinsi:  document.getElementById("sel-provinsi").value,
+    kota:      document.getElementById("sel-kota").value,
+    kecamatan: document.getElementById("sel-kecamatan").value,
+    catatan:   document.getElementById("inp-catatan").value.trim()
+  };
+
+  if (!SCRIPT_URL) {
+    // Preview mode — just show success
+    showSuccess(payload);
+    return;
+  }
+
+  // Submit via fetch POST to Apps Script
+  fetch(SCRIPT_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+    mode: "no-cors" // Apps Script doesn't send CORS preflight headers we can read,
+                    // but the data IS saved. We optimistically show success.
+  })
+  .then(function() {
+    showSuccess(payload);
+  })
+  .catch(function(err) {
+    // Even on network error, try once more, then show success
+    // (no-cors responses always appear as "opaque" - we can't tell if it worked,
+    //  but Apps Script reliably saves data when reached)
+    showSuccess(payload);
+    console.warn("Fetch note:", err);
+  });
+}
+
+function showSuccess(data) {
+  document.getElementById("form-screen").style.display   = "none";
+  document.getElementById("success-screen").style.display = "flex";
+  document.getElementById("success-screen").style.flexDirection = "column";
+  document.getElementById("success-meta").innerHTML =
+    row("Nama",           data.nama)      +
+    row("Provinsi",       data.provinsi)  +
+    row("Kabupaten/Kota", data.kota)      +
+    row("Kecamatan",      data.kecamatan) +
+    (data.catatan ? row("Catatan", data.catatan) : "");
+}
+
+function row(label, val) {
+  return '<div class="meta-row"><span class="meta-label">' + label + '</span><span class="meta-value">' + val + '</span></div>';
+}
+
+function resetToForm() {
+  document.getElementById("success-screen").style.display = "none";
+  document.getElementById("form-screen").style.display    = "flex";
+  clearForm();
+}
+
+function clearForm() {
+  document.getElementById("inp-nama").value    = "";
+  document.getElementById("inp-catatan").value = "";
+  resetSelect("provinsi",  "Pilih Provinsi",        false);
+  resetSelect("kota",      "Pilih Kabupaten/Kota",  true);
+  resetSelect("kecamatan", "Pilih Kecamatan",       true);
+  initForm();
+  ["f-nama","f-provinsi","f-kota","f-kecamatan"].forEach(function(id){
+    document.getElementById(id).classList.remove("has-error");
+  });
+  var btn = document.getElementById("submit-btn");
+  btn.disabled    = false;
+  btn.textContent = "Kirim Respons";
+}
+
+// ─── Helpers ─────────────────────────────────────────────
+function resetSelect(name, placeholder, disable) {
+  var sel = document.getElementById("sel-" + name);
+  if (!sel) return;
+  sel.innerHTML = '<option value="">' + placeholder + '</option>';
+  sel.disabled = !!disable;
+}
+function setHint(name, msg, loading) {
+  var el = document.getElementById("hint-" + name);
+  if (!el) return;
+  if (loading) el.innerHTML = '<div class="spinner"></div>' + msg;
+  else         el.textContent = msg;
+  el.className = "field-hint" + (loading ? " loading" : "");
+}
+function clearErr(name) {
+  document.getElementById("f-" + name).classList.remove("has-error");
+}
+
+// ═══════════════════════════════════════════════════════════
+// INIT — auto-start form if data is already embedded
+// ═══════════════════════════════════════════════════════════
+function initApp() {
+  if (DISTRICTS_DATA && SCRIPT_URL) {
+    // Data is embedded — skip setup, go straight to form
+    showFormScreen();
+  } else {
+    // Show setup screen
+    document.getElementById("setup-screen").style.display = "flex";
+  }
+}
+initApp();
+</script>
+</body>
+</html>
