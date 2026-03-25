@@ -1,4 +1,10 @@
-<html lang="id"><head>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Form Wilayah Indonesia</title>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Form Wilayah Indonesia</title>
@@ -310,8 +316,10 @@ body {
 /* ── Divider ── */
 .divider { height: 1px; background: var(--gray-100); }
 </style>
+
 </head>
 <body>
+
 
 <div class="wrap">
 
@@ -349,9 +357,7 @@ body {
           </div>
         </div>
 
-        <button class="btn btn-primary" id="generate-btn" onclick="generateForm()">
-          ✨ Generate &amp; Download Form
-        </button>
+        <button class="btn btn-primary" id="generate-btn" onclick="generateForm()" disabled="">⏳ Generating...</button>
 
         <div style="text-align:center;font-size:12px;color:var(--gray-400)">
           Form yang didownload bisa dihosting di GitHub Pages, Netlify, atau dibagikan langsung — <strong>tanpa perlu login Google</strong>.
@@ -459,7 +465,12 @@ body {
 
 </div>
 
+
+
+
+
 <script>
+
 // ═══════════════════════════════════════════════════════════
 // DATA — injected here after setup. Structure:
 // DISTRICTS_DATA = { "Jawa Barat": { "Kota Bandung": ["Andir", "Antapani", ...], ... }, ... }
@@ -551,39 +562,110 @@ function checkSetupReady() {
 }
 
 function generateForm() {
-  // Get current HTML, inject DISTRICTS_DATA and SCRIPT_URL, trigger download
   var url     = document.getElementById("script-url").value.trim();
   var dataStr = JSON.stringify(parsedCSVData);
-  var html    = document.documentElement.outerHTML;
+  var btn     = document.getElementById("generate-btn");
 
-  // Replace the placeholder data and URL
-  html = html.replace(
+  btn.disabled    = true;
+  btn.textContent = "⏳ Generating...";
+
+  // Fetch the original HTML source file (not the live DOM)
+  var xhr = new XMLHttpRequest();
+  xhr.open("GET", window.location.href, true);
+  xhr.onload = function() {
+    if (xhr.status !== 200) {
+      // Fallback: build from template string if XHR fails (e.g. file:// protocol)
+      generateFromTemplate(url, dataStr);
+      btn.disabled    = false;
+      btn.textContent = "✨ Generate & Download Form";
+      DISTRICTS_DATA  = parsedCSVData;
+      SCRIPT_URL      = url;
+      showFormScreen();
+      return;
+    }
+
+    var html = xhr.responseText;
+
+    // Inject data and URL into the source
+    html = html.replace(
+      "var DISTRICTS_DATA = null;",
+      "var DISTRICTS_DATA = " + dataStr + ";"
+    );
+    html = html.replace(
+      "var SCRIPT_URL     = null;",
+      'var SCRIPT_URL = "' + url + '";'
+    );
+
+    // Make initApp() skip the setup screen automatically
+    html = html.replace(
+      "initApp(); // embedded",
+      "initApp(); // data embedded"
+    );
+
+    downloadHTML(html);
+    btn.disabled    = false;
+    btn.textContent = "✨ Generate & Download Form";
+    DISTRICTS_DATA  = parsedCSVData;
+    SCRIPT_URL      = url;
+    showFormScreen();
+  };
+  xhr.onerror = function() {
+    // file:// protocol blocks XHR — use template fallback
+    generateFromTemplate(url, dataStr);
+    btn.disabled    = false;
+    btn.textContent = "✨ Generate & Download Form";
+    DISTRICTS_DATA  = parsedCSVData;
+    SCRIPT_URL      = url;
+    showFormScreen();
+  };
+  xhr.send();
+}
+
+function generateFromTemplate(url, dataStr) {
+  // Read the raw script tag content from the page source
+  // by grabbing all script tag text nodes and reconstructing
+  var scripts  = document.querySelectorAll("script:not([src])");
+  var appScript = "";
+  scripts.forEach(function(s) {
+    if (s.textContent.includes("DISTRICTS_DATA")) appScript = s.textContent;
+  });
+
+  // Patch the script content
+  appScript = appScript.replace(
     "var DISTRICTS_DATA = null;",
     "var DISTRICTS_DATA = " + dataStr + ";"
   );
-  html = html.replace(
+  appScript = appScript.replace(
     "var SCRIPT_URL     = null;",
     'var SCRIPT_URL = "' + url + '";'
   );
+  appScript = appScript.replace("initApp();", "initApp(); // embedded");
 
-  // Auto-start the form (skip setup)
-  html = html.replace(
-    "// auto-configured
-initApp();",
-    "// auto-configured\ninitApp();"
-  );
+  // Reconstruct the full HTML using the patched script
+  var head = document.head.innerHTML
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "");
+  var body = document.body.innerHTML
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "");
 
+  var html = '<!DOCTYPE html>\n<html lang="id">\n<head>\n' +
+    '<meta charset="UTF-8">\n' +
+    '<meta name="viewport" content="width=device-width, initial-scale=1.0">\n' +
+    '<title>Form Wilayah Indonesia</title>\n' +
+    head + "\n</head>\n<body>\n" +
+    body + "\n<script>\n" + appScript + "\n<\/script>\n</body>\n</html>";
+
+  downloadHTML(html);
+}
+
+function downloadHTML(html) {
   var blob = new Blob([html], { type: "text/html;charset=utf-8" });
   var a    = document.createElement("a");
   a.href   = URL.createObjectURL(blob);
-  a.download = "form-wilayah.html";
+  a.download = "index.html";
+  document.body.appendChild(a);
   a.click();
+  document.body.removeChild(a);
   URL.revokeObjectURL(a.href);
-
-  // Also show a preview
-  DISTRICTS_DATA = parsedCSVData;
-  SCRIPT_URL     = url;
-  showFormScreen();
 }
 
 function skipSetup() {
@@ -794,7 +876,7 @@ function initApp() {
   }
 }
 initApp();
+
 </script>
-
-
-</body></html>
+</body>
+</html>
